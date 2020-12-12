@@ -1,8 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+import com.rabbitmq.client.Channel;
+import java.io.IOException;
+import com.rabbitmq.client.DeliverCallback;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -10,11 +10,29 @@
  */
 public class Frame extends javax.swing.JFrame {
 
+    private final static String QUEUE_NAME = "queue";
+    
     /**
      * Creates new form Frame
      */
-    public Frame() {
+    public Frame() throws IOException {
         initComponents();
+        setTitle("Consumer");
+        jTextArea1.setEditable(false);
+        getMessages();
+    }
+    
+    public void getMessages() throws IOException{
+        Injection in = new Injection(new Test());
+        Channel channel = in.getChannel();
+        channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+        System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String message = new String(delivery.getBody(), "UTF-8");
+            jTextArea1.append("Received : '" + message + "'" + "\n");
+        };
+        channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> { });
     }
 
     /**
@@ -99,7 +117,11 @@ public class Frame extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Frame().setVisible(true);
+                try {
+                    new Frame().setVisible(true);
+                } catch (IOException ex) {
+                    Logger.getLogger(Frame.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }
