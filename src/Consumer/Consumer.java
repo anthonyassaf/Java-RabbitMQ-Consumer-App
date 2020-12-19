@@ -18,7 +18,7 @@ public class Consumer implements IConsumer {
     private IMessageService service;
     private final static String QUEUE_NAME = "assaf";
     private final static String HOST = "localhost";
-    
+
     public Consumer(IMessageService svc) {
         this.service = svc;
     }
